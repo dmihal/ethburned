@@ -48,7 +48,7 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, block }) => {
       <p className="description">
         The more Ethereum gets used...
         <br />
-        The more Ether gets destroyed
+        The more Ether gets burned
       </p>
 
       <div className="card">
