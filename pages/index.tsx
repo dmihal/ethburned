@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NextPage, GetStaticProps } from 'next';
 import { getTotalBurned, getBurned24hrs } from 'data/queries';
 import SocialTags from 'components/SocialTags';
@@ -15,6 +15,28 @@ const decimal = (num: number) =>
   });
 
 export const Home: NextPage<HomeProps> = ({ total, yesterday }) => {
+  const [data, setData] = useState({ total, yesterday });
+
+  useEffect(() => {
+    let timer;
+    const refresh = async () => {
+      try {
+        const req = await fetch('/api/v1/burned');
+        const json = await req.json();
+        setData({
+          total: json.total,
+          yesterday: json.yesterday,
+        });
+      } catch (e) {
+        console.warn(e);
+      }
+      timer = setTimeout(refresh, 2500);
+    };
+    timer = setTimeout(refresh, 2500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <main>
       <SocialTags />
@@ -28,14 +50,14 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday }) => {
       </p>
 
       <div className="card">
-        <div className="big">{decimal(total)} ETH</div>
+        <div className="big">{decimal(data.total)} ETH</div>
         <div>Burned total</div>
       </div>
 
       <div className="card">
-        <div className="big">{decimal(yesterday)} ETH</div>
+        <div className="big">{decimal(data.yesterday)} ETH</div>
         <div>Burned in the last 24 hours</div>
-        <div>({decimal(yesterday / 24)} ETH per hour)</div>
+        <div>({decimal(data.yesterday / 24)} ETH per hour)</div>
       </div>
 
       <style jsx>{`
