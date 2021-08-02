@@ -7,13 +7,21 @@ export const getTotalBurned = async () => {
     ethburned(id:"1") {
       burned
     }
+    _meta {
+      block {
+        number
+      }
+    }
   }`,
     {
       node: 'http://subgraph.ethburned.com',
     }
   );
 
-  return parseFloat(result.ethburned.burned);
+  return {
+    burned: parseFloat(result.ethburned.burned),
+    block: parseInt(result._meta.block.number),
+  };
 };
 
 const ONE_DAY = 24 * 60 * 60 * 1000;

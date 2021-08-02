@@ -6,6 +6,7 @@ import SocialTags from 'components/SocialTags';
 interface HomeProps {
   total: number;
   yesterday: number;
+  block: number;
 }
 
 const decimal = (num: number) =>
@@ -14,8 +15,8 @@ const decimal = (num: number) =>
     maximumFractionDigits: 10,
   });
 
-export const Home: NextPage<HomeProps> = ({ total, yesterday }) => {
-  const [data, setData] = useState({ total, yesterday });
+export const Home: NextPage<HomeProps> = ({ total, yesterday, block }) => {
+  const [data, setData] = useState({ total, yesterday, block });
 
   useEffect(() => {
     let timer;
@@ -26,6 +27,7 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday }) => {
         setData({
           total: json.total,
           yesterday: json.yesterday,
+          block: json.block,
         });
       } catch (e) {
         console.warn(e);
@@ -59,6 +61,8 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday }) => {
         <div>Burned in the last 24 hours</div>
         <div>({decimal(data.yesterday / 24)} ETH per hour)</div>
       </div>
+
+      <div>Block: {data.block}</div>
 
       <style jsx>{`
         main {
@@ -106,9 +110,12 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday }) => {
 };
 
 export const getStaticProps: GetStaticProps<HomeProps> = async () => {
-  const [total, yesterday] = await Promise.all([getTotalBurned(), getBurned24hrs()]);
+  const [{ burned: total, block }, yesterday] = await Promise.all([
+    getTotalBurned(),
+    getBurned24hrs(),
+  ]);
 
-  return { props: { total, yesterday }, revalidate: 60 };
+  return { props: { total, yesterday, block }, revalidate: 60 };
 };
 
 export default Home;
