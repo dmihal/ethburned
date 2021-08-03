@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NextPage, GetStaticProps } from 'next';
 import dynamic from 'next/dynamic';
-import { getTotalBurned, getBurned24hrs } from 'data/queries';
+import { getTotalBurned, getBurnedLastHr } from 'data/queries';
 import SocialTags from 'components/SocialTags';
 
 interface HomeProps {
@@ -49,23 +49,24 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, block }) => {
       <h1 className="title">ETH Burned</h1>
 
       <p className="description">
-        The more Ethereum gets used...
+        The more Ethereum is used...
         <br />
-        The more Ether gets burned
+        The more ETH is burned
       </p>
 
-      <div className="card">
-        <div className="big">{decimal(data.total)} ETH</div>
-        <div>Burned total</div>
+      <div className="row">
+        <div className="card">
+          <div className="big">{decimal(data.total)} ETH</div>
+          <div>Total burned</div>
+        </div>
+
+        <div className="card">
+          <div className="big">{decimal(data.yesterday)} ETH</div>
+          <div>Burned in the last hour</div>
+        </div>
       </div>
 
-      <div className="card">
-        <div className="big">{decimal(data.yesterday)} ETH</div>
-        <div>Burned in the last 24 hours</div>
-        <div>({decimal(data.yesterday / 24)} ETH per hour)</div>
-      </div>
-
-      <div>Block: {data.block}</div>
+      <div className="block-num">Block: {data.block}</div>
 
       <Chart />
 
@@ -99,16 +100,34 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, block }) => {
           margin: 4px 0 20px;
         }
 
+        .row {
+          display: flex;
+        }
+
         .card {
           text-align: center;
           margin: 8px;
           padding: 8px;
           border: solid 1px #d0d1d9;
           border-radius: 8px;
+          font-size: 24px;
+        }
+
+        .block-num {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          padding: 4px 8px;
         }
 
         .big {
-          font-size: 24px;
+          font-size: 32px;
+        }
+
+        @media (max-width: 600px) {
+          .row {
+            flex-direction: column;
+          }
         }
       `}</style>
     </main>
@@ -118,7 +137,7 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, block }) => {
 export const getStaticProps: GetStaticProps<HomeProps> = async () => {
   const [{ burned: total, block }, yesterday] = await Promise.all([
     getTotalBurned(),
-    getBurned24hrs(),
+    getBurnedLastHr(),
   ]);
 
   return { props: { total, yesterday, block }, revalidate: 60 };

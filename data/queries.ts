@@ -24,10 +24,10 @@ export const getTotalBurned = async () => {
   };
 };
 
-const ONE_DAY = 24 * 60 * 60 * 1000;
+const ONE_HOUR = 60 * 60 * 1000;
 
-export const getBurned24hrs = async () => {
-  const yesterday = new Date().getTime() - ONE_DAY;
+export const getBurnedLastHr = async () => {
+  const yesterday = new Date().getTime() - ONE_HOUR;
   const yesterdayBlock = await sdk.chainData.getBlockNumber(yesterday, 'goerli');
 
   const result = await sdk.graph.query(

@@ -7,10 +7,10 @@ const Header = () => {
         <li className="header-link">
           <a href="https://cryptofees.info/">cryptofees.info</a>
         </li>
-        <li className="header-link">
+        <li className="header-link hideable">
           <a href="https://money-movers.info/">money-movers.info</a>
         </li>
-        <li className="header-link">
+        <li className="header-link hideable">
           <a href="https://open-orgs.info/">open-orgs.info</a>
         </li>
         <li className="header-link">
@@ -20,6 +20,12 @@ const Header = () => {
           <a>More</a>
 
           <ul className="dropdown">
+            <li className="header-link showable">
+              <a href="https://money-movers.info/">money-movers.info</a>
+            </li>
+            <li className="header-link showable">
+              <a href="https://open-orgs.info/">open-orgs.info</a>
+            </li>
             <li className="header-link">
               <a href="https://stakers.info/">stakers.info</a>
             </li>
@@ -77,11 +83,23 @@ const Header = () => {
           display: block;
         }
 
+        .showable {
+          display: none;
+        }
+
         @media (max-width: 700px) {
           .header-link > a,
           .header-link > div {
             margin: 0 1px;
             padding: 4px;
+          }
+
+          .hideable {
+            display: none;
+          }
+
+          .showable {
+            display: block;
           }
         }
       `}</style>
