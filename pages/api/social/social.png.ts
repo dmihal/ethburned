@@ -6,12 +6,12 @@ import path from 'path';
 import SocialCard from 'components/SocialCard/SocialCard';
 import { getTotalBurned } from 'data/queries';
 
-// These statements causes Next to bundle these files
-path.resolve(process.cwd(), 'fonts', 'fonts.conf');
-path.resolve(process.cwd(), 'fonts', 'SofiaProRegular.ttf');
-
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { block } = await getTotalBurned();
+
+  // These statements causes Next to bundle these files
+  console.log(path.resolve(process.cwd(), 'fonts', 'fonts.conf')); // eslint-disable-line
+  console.log(path.resolve(process.cwd(), 'fonts', 'SofiaProRegular.ttf')); // eslint-disable-line
 
   const svg = ReactDOMServer.renderToString(
     React.createElement(SocialCard, {
