@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NextPage, GetStaticProps } from 'next';
+import dynamic from 'next/dynamic';
 import { getTotalBurned, getBurned24hrs } from 'data/queries';
 import SocialTags from 'components/SocialTags';
 
@@ -8,6 +9,8 @@ interface HomeProps {
   yesterday: number;
   block: number;
 }
+
+const Chart = dynamic(() => import('components/Chart'), { ssr: false });
 
 const decimal = (num: number) =>
   num.toLocaleString('en-us', {
@@ -64,8 +67,11 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, block }) => {
 
       <div>Block: {data.block}</div>
 
+      <Chart />
+
       <style jsx>{`
         main {
+          width: 100%;
           padding: 2rem 0 3rem;
           flex: 1;
           display: flex;

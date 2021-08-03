@@ -1769,6 +1769,21 @@ chardet@^0.7.0:
   resolved "https://registry.yarnpkg.com/chardet/-/chardet-0.7.0.tgz#90094849f0937f2eedc2425d0d28a9e5f0cbad9e"
   integrity sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==
 
+chart.js@^3.5.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/chart.js/-/chart.js-3.5.0.tgz#6eb075332d4ebbbb20a94e5a07a234052ed6c4fb"
+  integrity sha512-J1a4EAb1Gi/KbhwDRmoovHTRuqT8qdF0kZ4XgwxpGethJHUdDrkqyPYwke0a+BuvSeUxPf8Cos6AX2AB8H8GLA==
+
+chartjs-adapter-luxon@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/chartjs-adapter-luxon/-/chartjs-adapter-luxon-1.0.0.tgz#4f37164295859a468b64cc24ec2718356aa63d94"
+  integrity sha512-oy4iH4o6+8FqDoHYsEmUAB8+q8QO+vERDDHkmODm+MwWW1cet02wHN2KYvidwgBLYUX0laNWaWGN7l8Thac2Zg==
+
+chartjs-plugin-streaming@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/chartjs-plugin-streaming/-/chartjs-plugin-streaming-2.0.0.tgz#daa2124ed3b3069bad92d24c07dbb0e6b1774635"
+  integrity sha512-oBwHRmovGbPDS1h8PhpttnlKjI6eiJO13v4h+xz+mfbHhIc+iNF9xuMobCIFMKFH7rlVWi5TJAOIxoXyGElYYg==
+
 chokidar@3.5.1:
   version "3.5.1"
   resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-3.5.1.tgz#ee9ce7bbebd2b79f49f304799d5468e31e14e68a"
@@ -4702,6 +4717,11 @@ lru-cache@^6.0.0:
   integrity sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==
   dependencies:
     yallist "^4.0.0"
+
+luxon@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-2.0.1.tgz#b41ca2f1f5ad8099c18603ae6c36a7794039daf0"
+  integrity sha512-8Eawf81c9ZlQj62W3eq4mp+C7SAIAnmaS7ZuEAiX503YMcn+0C1JnMQRtfaQj6B5qTZLgHv0F4H5WabBCvi1fw==
 
 lz-string@^1.4.4:
   version "1.4.4"
