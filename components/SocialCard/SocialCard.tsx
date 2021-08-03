@@ -24,19 +24,11 @@ const SocialCard: React.FC<SocialCardProps> = ({ block }) => {
       </defs>
       <g>
         <rect fill="#F9FAFC" x="0" y="0" width="688" height="344"></rect>
-        <text fontFamily={font} fontSize="24" fill="#091636" x="27" y="44">
+        <text fontFamily={font} fontSize="36" fill="#091636" x="27" y="60">
           ETHBurned.info
         </text>
-        <text
-          opacity="0.4"
-          fontFamily={font}
-          fontSize="18"
-          fill="#091636"
-          x="650"
-          y="44"
-          textAnchor="end"
-        >
-          {(LONDON_BLOCK - block).toLocaleString()} Blocks Remaining
+        <text opacity="0.6" fontFamily={font} fontSize="24" fill="#091636" x="27" y="300">
+          {(LONDON_BLOCK - block).toLocaleString()} Blocks Remaining until EIP-1559
         </text>
       </g>
     </svg>
