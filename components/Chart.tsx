@@ -7,7 +7,14 @@ import { LineController, LineElement, PointElement, LinearScale, CategoryScale }
 ChartJS.register(ChartStreaming);
 ChartJS.register([LineController, LineElement, PointElement, LinearScale, CategoryScale]);
 
-const Chart = () => {
+interface ChartProps {
+  startBlock: number;
+}
+
+const Chart: React.FC<ChartProps> = () => {
+  // const recentBlockData = useRef([]);
+  const maxBlock = useRef(0);
+
   const data = useRef({
     datasets: [
       {
@@ -16,22 +23,29 @@ const Chart = () => {
         fill: false,
         backgroundColor: 'rgb(255, 99, 132)',
         borderColor: 'rgba(255, 99, 132, 0.2)',
+        cubicInterpolationMode: 'monotone' as 'monotone',
       },
     ],
   });
   const canvas = useRef<any>(null);
 
-  const onRefresh = (chart) => {
-    if (data.current.datasets[0].data.length > 15) {
-      return;
+  const onRefresh = async (chart) => {
+    const req = await fetch('/api/v1/recent-blocks');
+    const json = await req.json();
+
+    for (let i = 1; i < json.burnedOnBlock.length; i += 1) {
+      const blockData = json.burnedOnBlock[i];
+      if (blockData.block > maxBlock.current) {
+        maxBlock.current = blockData.block;
+        data.current.datasets[0].data.push({
+          x: blockData.timestamp * 1000,
+          y: blockData.burned - json.burnedOnBlock[i - 1].burned,
+        });
+      }
     }
 
-    const now = Date.now() - 5000;
-    data.current.datasets[0].data.push({
-      x: now,
-      y: Math.random() * 20,
-    });
-    chart.data = data.current;
+    chart.data.datasets[0].data = data.current.datasets[0].data;
+    chart.update('quiet');
   };
 
   const options = {
@@ -39,17 +53,23 @@ const Chart = () => {
       x: {
         type: 'realtime' as 'realtime',
         realtime: {
-          duration: 20000,
-          refresh: 1000,
+          duration: 5 * 60 * 1000,
+          refresh: 2500,
           delay: 2000,
           onRefresh: onRefresh,
         },
       },
       y: {
         title: {
-          display: true,
-          text: 'Value',
+          display: false,
         },
+      },
+    },
+    title: {
+      display: true,
+      text: 'ETH burned per block',
+      font: {
+        size: 18,
       },
     },
     interaction: {
@@ -60,7 +80,18 @@ const Chart = () => {
   useLayoutEffect(() => {
     const config = {
       type: 'line' as 'line',
-      data: data.current,
+      data: {
+        datasets: [
+          {
+            label: '# of Votes',
+            data: [],
+            fill: false,
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgba(255, 99, 132, 0.2)',
+            cubicInterpolationMode: 'monotone' as 'monotone',
+          },
+        ],
+      },
       options,
     };
     const chart = new ChartJS(canvas.current, config);
