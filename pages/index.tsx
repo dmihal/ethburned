@@ -59,7 +59,7 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, currentBlock }) =>
       {data.currentBlock < LONDON_BLOCK ? (
         <Fragment>
           <div className="card">
-            <div className="big">{LONDON_BLOCK - /*data.*/ currentBlock}</div>
+            <div className="big">{LONDON_BLOCK - data.currentBlock}</div>
             <div>Blocks remaining until London upgrade</div>
           </div>
         </Fragment>

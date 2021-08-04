@@ -2,7 +2,7 @@ import sdk from './sdk';
 
 export const getTotalBurned = async () => {
   const result = await sdk.graph.query(
-    'dmihal/eth-burned',
+    'dmihal/mainnet-eth-burned',
     `{
     ethburned(id:"1") {
       burned
@@ -19,7 +19,7 @@ export const getTotalBurned = async () => {
   );
 
   return {
-    burned: parseFloat(result.ethburned.burned),
+    burned: parseFloat(result.ethburned?.burned || '0'),
     block: parseInt(result._meta.block.number),
   };
 };
@@ -31,7 +31,7 @@ export const getBurnedLastHr = async () => {
   const yesterdayBlock = await sdk.chainData.getBlockNumber(yesterday, 'goerli');
 
   const result = await sdk.graph.query(
-    'dmihal/eth-burned',
+    'dmihal/mainnet-eth-burned',
     `query ($yesterdayBlock: Int!){
     now: ethburned(id:"1") {
       burned
@@ -45,6 +45,10 @@ export const getBurnedLastHr = async () => {
       node: 'http://subgraph.ethburned.com',
     }
   );
+
+  if (!result.now) {
+    return 0;
+  }
 
   return result.now.burned - result.yesterday.burned;
 };
