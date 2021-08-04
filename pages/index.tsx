@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { NextPage, GetStaticProps } from 'next';
 import dynamic from 'next/dynamic';
-import { getTotalBurned, getBurnedLastHr } from 'data/queries';
+import { getTotalBurned, getBurnedLastHr, getCurrentBlock } from 'data/queries';
 import SocialTags from 'components/SocialTags';
 
 interface HomeProps {
   total: number;
   yesterday: number;
-  block: number;
+  currentBlock: number;
 }
 
 const Chart = dynamic(() => import('components/Chart'), { ssr: false });
@@ -18,8 +18,10 @@ const decimal = (num: number) =>
     maximumFractionDigits: 10,
   });
 
-export const Home: NextPage<HomeProps> = ({ total, yesterday, block }) => {
-  const [data, setData] = useState({ total, yesterday, block });
+const LONDON_BLOCK = 12965000;
+
+export const Home: NextPage<HomeProps> = ({ total, yesterday, currentBlock }) => {
+  const [data, setData] = useState({ total, yesterday, currentBlock });
 
   useEffect(() => {
     let timer;
@@ -30,7 +32,7 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, block }) => {
         setData({
           total: json.total,
           yesterday: json.yesterday,
-          block: json.block,
+          currentBlock: json.block,
         });
       } catch (e) {
         console.warn(e);
@@ -54,21 +56,32 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, block }) => {
         The more ETH is burned
       </p>
 
-      <div className="row">
-        <div className="card">
-          <div className="big">{decimal(data.total)} ETH</div>
-          <div>Total burned</div>
-        </div>
+      {data.currentBlock < LONDON_BLOCK ? (
+        <Fragment>
+          <div className="card">
+            <div className="big">{LONDON_BLOCK - /*data.*/ currentBlock}</div>
+            <div>Blocks remaining until London upgrade</div>
+          </div>
+        </Fragment>
+      ) : (
+        <Fragment>
+          <div className="row">
+            <div className="card">
+              <div className="big">{decimal(data.total)} ETH</div>
+              <div>Total burned</div>
+            </div>
 
-        <div className="card">
-          <div className="big">{decimal(data.yesterday)} ETH</div>
-          <div>Burned in the last hour</div>
-        </div>
-      </div>
+            <div className="card">
+              <div className="big">{decimal(data.yesterday)} ETH</div>
+              <div>Burned in the last hour</div>
+            </div>
+          </div>
 
-      <div className="block-num">Block: {data.block}</div>
+          <Chart />
+        </Fragment>
+      )}
 
-      <Chart />
+      <div className="block-num">Block: {data.currentBlock}</div>
 
       <style jsx>{`
         main {
@@ -135,12 +148,13 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, block }) => {
 };
 
 export const getStaticProps: GetStaticProps<HomeProps> = async () => {
-  const [{ burned: total, block }, yesterday] = await Promise.all([
+  const [{ burned: total }, yesterday, currentBlock] = await Promise.all([
     getTotalBurned(),
     getBurnedLastHr(),
+    getCurrentBlock(),
   ]);
 
-  return { props: { total, yesterday, block }, revalidate: 60 };
+  return { props: { total, yesterday, currentBlock }, revalidate: 60 };
 };
 
 export default Home;

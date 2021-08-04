@@ -78,7 +78,7 @@ export const getBurnedOnRecentBlocks = async () => {
   });
 
   const dateResults = await sdk.graph.query(
-    'blocklytics/goerli-blocks',
+    'blocklytics/ethereum-blocks',
     `query ($startBlock: Int!, $endBlock: Int!){
        blocks(where: {number_gte: $startBlock, number_lte: $endBlock }, orderBy: number) {
         number
@@ -108,4 +108,16 @@ export const getBurnedOnRecentBlocks = async () => {
   }
 
   return burnedOnBlock;
+};
+
+export const getCurrentBlock = async () => {
+  const blockResult = await sdk.graph.query(
+    'blocklytics/ethereum-blocks',
+    `{
+      blocks(first: 1, skip: 0, orderBy: number, orderDirection: desc, where: {number_gt: 9300000}) {
+        number
+      }
+    }`
+  );
+  return parseInt(blockResult.blocks[0].number);
 };
