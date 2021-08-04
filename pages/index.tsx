@@ -84,7 +84,7 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, currentBlock, bloc
                   }
                 />
               </div>
-              <div className="sub-text">Estimated time</div>
+              <div className="sub-text">Time remaining</div>
             </div>
           </div>
           <div className="event-container">
