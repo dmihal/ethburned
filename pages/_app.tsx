@@ -18,7 +18,7 @@ const App: React.FC<AppProps> = ({ Component, pageProps }) => {
   return (
     <div className="container">
       <Head>
-        <title key="title">CryptoFees.info</title>
+        <title key="title">EthBurned.info</title>
         <link rel="icon" href="/favicon.png" />
         <link href="https://use.typekit.net/jrq0bbf.css" rel="stylesheet" />
         <link
