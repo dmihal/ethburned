@@ -33,11 +33,13 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, currentBlock, bloc
       try {
         const req = await fetch('/api/v1/burned');
         const json = await req.json();
-        setData({
-          total: json.total,
-          yesterday: json.yesterday,
-          currentBlock: json.block,
-        });
+        if (json.block != data.currentBlock) {
+          setData({
+            total: json.total,
+            yesterday: json.yesterday,
+            currentBlock: json.block,
+          });
+        }
       } catch (e) {
         console.warn(e);
       }
