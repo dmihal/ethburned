@@ -37,6 +37,7 @@
     "next": "latest",
     "next-images": "^1.4.1",
     "react": "^16.13.1",
+    "react-countdown": "^2.3.2",
     "react-dom": "^16.13.1",
     "react-feather": "^2.0.9",
     "react-ga4": "^1.0.0",

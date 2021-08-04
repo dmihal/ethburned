@@ -125,3 +125,28 @@ export const getCurrentBlock = async () => {
   );
   return parseInt(blockResult.blocks[0].number);
 };
+
+export const getBlockTime = async () => {
+  const NUM_BLOCKS = 1000;
+
+  const currentBlockResult = await sdk.graph.query(
+    'blocklytics/ethereum-blocks',
+    `{
+      blocks(first: 1, skip: 0, orderBy: number, orderDirection: desc, where: {number_gt: 9300000}) {
+        number
+        timestamp
+      }
+    }`
+  );
+
+  const oldBlockResult = await sdk.graph.query(
+    'blocklytics/ethereum-blocks',
+    `{
+      blocks(where: {number: ${currentBlockResult.blocks[0].number - NUM_BLOCKS}}) {
+        timestamp
+      }
+    }`
+  );
+
+  return (currentBlockResult.blocks[0].timestamp - oldBlockResult.blocks[0].timestamp) / NUM_BLOCKS;
+};

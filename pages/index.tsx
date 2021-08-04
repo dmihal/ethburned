@@ -1,13 +1,15 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { NextPage, GetStaticProps } from 'next';
 import dynamic from 'next/dynamic';
-import { getTotalBurned, getBurnedLastHr, getCurrentBlock } from 'data/queries';
+import Countdown from 'react-countdown';
+import { getTotalBurned, getBurnedLastHr, getCurrentBlock, getBlockTime } from 'data/queries';
 import SocialTags from 'components/SocialTags';
 
 interface HomeProps {
   total: number;
   yesterday: number;
   currentBlock: number;
+  blockTime: number;
 }
 
 const Chart = dynamic(() => import('components/Chart'), { ssr: false });
@@ -20,7 +22,9 @@ const decimal = (num: number) =>
 
 const LONDON_BLOCK = 12965000;
 
-export const Home: NextPage<HomeProps> = ({ total, yesterday, currentBlock }) => {
+const pad = (n: number) => (n < 10 ? '0' + n : n);
+
+export const Home: NextPage<HomeProps> = ({ total, yesterday, currentBlock, blockTime }) => {
   const [data, setData] = useState({ total, yesterday, currentBlock });
 
   useEffect(() => {
@@ -44,6 +48,11 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, currentBlock }) =>
     return () => clearTimeout(timer);
   }, []);
 
+  let startDate: null | Date = null;
+  if (data.currentBlock < LONDON_BLOCK) {
+    startDate = new Date(Date.now() + (LONDON_BLOCK - data.currentBlock) * blockTime * 1000);
+  }
+
   return (
     <main>
       <SocialTags />
@@ -61,6 +70,23 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, currentBlock }) =>
           <div className="card">
             <div className="big">{LONDON_BLOCK - data.currentBlock}</div>
             <div>Blocks remaining until London upgrade</div>
+          </div>
+
+          <div className="card">
+            <div className="big">
+              <Countdown
+                date={startDate || 0}
+                renderer={({ hours, minutes, seconds }) =>
+                  `${hours}:${pad(minutes)}:${pad(seconds)}`
+                }
+              />
+            </div>
+            <div>Estimated time until upgrade</div>
+            <div className="small">
+              {new Intl.DateTimeFormat('en-US', { dateStyle: 'full', timeStyle: 'long' }).format(
+                startDate
+              )}
+            </div>
           </div>
         </Fragment>
       ) : (
@@ -126,6 +152,12 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, currentBlock }) =>
           font-size: 24px;
         }
 
+        .small {
+          font-size: 14px;
+          margin-top: 4px;
+          color: #333;
+        }
+
         .block-num {
           position: fixed;
           bottom: 0;
@@ -148,13 +180,14 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, currentBlock }) =>
 };
 
 export const getStaticProps: GetStaticProps<HomeProps> = async () => {
-  const [{ burned: total }, yesterday, currentBlock] = await Promise.all([
+  const [{ burned: total }, yesterday, currentBlock, blockTime] = await Promise.all([
     getTotalBurned(),
     getBurnedLastHr(),
     getCurrentBlock(),
+    getBlockTime(),
   ]);
 
-  return { props: { total, yesterday, currentBlock }, revalidate: 60 };
+  return { props: { total, yesterday, currentBlock, blockTime }, revalidate: 60 };
 };
 
 export default Home;
