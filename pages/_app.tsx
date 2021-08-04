@@ -75,6 +75,9 @@ const App: React.FC<AppProps> = ({ Component, pageProps }) => {
           text-align: center;
           padding: 2rem 0;
         }
+        footer > * {
+          margin-bottom: 0.5em;
+        }
       `}</style>
       <style jsx global>{`
         html,

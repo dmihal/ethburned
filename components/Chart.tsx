@@ -143,8 +143,6 @@ const Chart: React.FC = () => {
       <style jsx>{`
         .chart-container {
           width: 100%;
-          max-width: 800px;
-          padding: 12px;
           height: 40%;
         }
       `}</style>
