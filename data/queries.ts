@@ -104,6 +104,10 @@ export const getBurnedOnRecentBlocks = async () => {
     }
 
     const block = currentBlock - 30 + i;
+
+    if (!result[`block_${block}`]) {
+      continue;
+    }
     burnedOnBlock.push({
       block,
       burned: parseFloat(result[`block_${block}`].burned),
