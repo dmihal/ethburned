@@ -46,8 +46,12 @@ export const getBurnedLastHr = async () => {
     }
   );
 
-  if (!result.now || !result.yesterday) {
+  if (!result.now) {
     return 0;
+  }
+
+  if (!result.yesterday) {
+    return parseFloat(result.now.burned);
   }
 
   return result.now.burned - result.yesterday.burned;
