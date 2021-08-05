@@ -2,6 +2,7 @@ import React, { useLayoutEffect, useRef } from 'react';
 import { Chart as ChartJS } from 'chart.js';
 import 'chartjs-adapter-luxon';
 import ChartStreaming from 'chartjs-plugin-streaming';
+import AnnotationPlugin from 'chartjs-plugin-annotation';
 import {
   LineController,
   LineElement,
@@ -13,6 +14,7 @@ import {
   SubTitle,
 } from 'chart.js';
 
+ChartJS.register(AnnotationPlugin);
 ChartJS.register(ChartStreaming);
 ChartJS.register([
   LineController,
@@ -107,6 +109,30 @@ const Chart: React.FC = () => {
             return 'ETH burned';
           },
         },
+      },
+      annotation: {
+        annotations: [
+          {
+            type: 'line' as 'line',
+            mode: 'horizontal' as 'horizontal',
+            scaleID: 'y' as 'y',
+            value: 2,
+            borderColor: 'rgb(75, 192, 192)',
+            borderWidth: 4,
+            label: {
+              enabled: false,
+              content: '2 ETH issued per block (approximate)',
+            },
+            enter(ctx: any) {
+              ctx.chart.config.options.plugins.annotation.annotations[0].label.enabled = true;
+              ctx.chart.update('quiet');
+            },
+            leave(ctx: any) {
+              ctx.chart.config.options.plugins.annotation.annotations[0].label.enabled = false;
+              ctx.chart.update('quiet');
+            },
+          },
+        ],
       },
     },
     interaction: {

@@ -1779,6 +1779,11 @@ chartjs-adapter-luxon@^1.0.0:
   resolved "https://registry.yarnpkg.com/chartjs-adapter-luxon/-/chartjs-adapter-luxon-1.0.0.tgz#4f37164295859a468b64cc24ec2718356aa63d94"
   integrity sha512-oy4iH4o6+8FqDoHYsEmUAB8+q8QO+vERDDHkmODm+MwWW1cet02wHN2KYvidwgBLYUX0laNWaWGN7l8Thac2Zg==
 
+chartjs-plugin-annotation@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/chartjs-plugin-annotation/-/chartjs-plugin-annotation-1.0.2.tgz#59ea0971b52b91c78690a5ba328e4ed38940f864"
+  integrity sha512-asqP2/B+9tv105e3rwkzqoIgzhDBQRMzFRh/0ZTKqormxDXMP68uzxI5t3Fx8bxZSMNeEph0sY+0GIXXU0PeBQ==
+
 chartjs-plugin-streaming@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/chartjs-plugin-streaming/-/chartjs-plugin-streaming-2.0.0.tgz#daa2124ed3b3069bad92d24c07dbb0e6b1774635"
