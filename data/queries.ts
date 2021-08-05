@@ -28,7 +28,7 @@ const ONE_HOUR = 60 * 60 * 1000;
 
 export const getBurnedLastHr = async () => {
   const yesterday = new Date().getTime() - ONE_HOUR;
-  const yesterdayBlock = await sdk.chainData.getBlockNumber(yesterday, 'goerli');
+  const yesterdayBlock = await sdk.chainData.getBlockNumber(yesterday, 'ethereum');
 
   const result = await sdk.graph.query(
     'dmihal/mainnet-eth-burned',
