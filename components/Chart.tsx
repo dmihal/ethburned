@@ -100,7 +100,7 @@ const Chart: React.FC = () => {
             // console.log(ctx);
             return ctx.parsed.y.toLocaleString('en-us', {
               minimumFractionDigits: 2,
-              maximumFractionDigits: 14,
+              maximumFractionDigits: 6,
             });
           },
           afterLabel() {
