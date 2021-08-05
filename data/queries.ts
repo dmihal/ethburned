@@ -46,7 +46,7 @@ export const getBurnedLastHr = async () => {
     }
   );
 
-  if (!result.now) {
+  if (!result.now || !result.yesterday) {
     return 0;
   }
 
