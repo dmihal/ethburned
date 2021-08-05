@@ -124,10 +124,12 @@ const Chart: React.FC = () => {
               content: '2 ETH issued per block (approximate)',
             },
             enter(ctx: any) {
+              ctx.chart.config.options.plugins.tooltip.enabled = false;
               ctx.chart.config.options.plugins.annotation.annotations[0].label.enabled = true;
               ctx.chart.update('quiet');
             },
             leave(ctx: any) {
+              ctx.chart.config.options.plugins.tooltip.enabled = true;
               ctx.chart.config.options.plugins.annotation.annotations[0].label.enabled = false;
               ctx.chart.update('quiet');
             },
