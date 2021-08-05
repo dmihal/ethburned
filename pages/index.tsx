@@ -17,7 +17,7 @@ const Chart = dynamic(() => import('components/Chart'), { ssr: false });
 const decimal = (num: number) =>
   num.toLocaleString('en-us', {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 10,
+    maximumFractionDigits: 8,
   });
 
 const LONDON_BLOCK = 12965000;
