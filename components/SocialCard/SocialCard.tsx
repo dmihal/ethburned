@@ -33,7 +33,7 @@ const SocialCard: React.FC<SocialCardProps> = ({ block, burned }) => {
             ? `${(LONDON_BLOCK - block).toLocaleString()} blocks remaining until EIP-1559`
             : `${burned.toLocaleString('en-us', {
                 minimumFractionDigits: 2,
-                maximumFractionDigits: 4,
+                maximumFractionDigits: 2,
               })} ETH burned total by EIP-1559`}
         </text>
       </g>
