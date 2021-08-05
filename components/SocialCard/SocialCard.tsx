@@ -2,13 +2,14 @@ import React from 'react';
 
 interface SocialCardProps {
   block: number;
+  burned: number;
 }
 
 const font = 'SofiaProRegular, Sofia Pro, sofia-pro';
 
 const LONDON_BLOCK = 12965000;
 
-const SocialCard: React.FC<SocialCardProps> = ({ block }) => {
+const SocialCard: React.FC<SocialCardProps> = ({ block, burned }) => {
   return (
     <svg
       viewBox="0 0 688 344"
@@ -28,7 +29,12 @@ const SocialCard: React.FC<SocialCardProps> = ({ block }) => {
           ETHBurned.info
         </text>
         <text fontFamily={font} fontSize="36" fill="#091636" x="27" y="270">
-          {(LONDON_BLOCK - block).toLocaleString()} blocks remaining until EIP-1559
+          {block < LONDON_BLOCK
+            ? `${(LONDON_BLOCK - block).toLocaleString()} blocks remaining until EIP-1559`
+            : `${burned.toLocaleString('en-us', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 6,
+              })} ETH burned total by EIP-1559`}
         </text>
       </g>
 
