@@ -59,7 +59,7 @@ export const getBurnedOnRecentBlocks = async () => {
       block: { number: currentBlock },
     },
   } = await sdk.graph.query(
-    'dmihal/eth-burned',
+    'dmihal/mainnet-eth-burned',
     `{
     _meta {
       block {
@@ -77,7 +77,7 @@ export const getBurnedOnRecentBlocks = async () => {
     burnQueries.push(`block_${block}: ethburned(id: "1", block: { number: ${block} }) { burned }`);
   }
 
-  const result = await sdk.graph.query('dmihal/eth-burned', `{${burnQueries.join('\n')}}`, {
+  const result = await sdk.graph.query('dmihal/mainnet-eth-burned', `{${burnQueries.join('\n')}}`, {
     node: 'http://subgraph.ethburned.com',
   });
 
