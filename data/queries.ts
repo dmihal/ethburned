@@ -81,11 +81,11 @@ export const getBurnedOnRecentBlocks = async () => {
     burnQueries.push(`block_${block}: ethburned(id: "1", block: { number: ${block} }) { burned }`);
   }
 
-  const result = await sdk.graph.query('dmihal/mainnet-eth-burned', `{${burnQueries.join('\n')}}`, {
+  const burnQuery = sdk.graph.query('dmihal/mainnet-eth-burned', `{${burnQueries.join('\n')}}`, {
     node: 'http://subgraph.ethburned.com',
   });
 
-  const dateResults = await sdk.graph.query(
+  const dataQuery = sdk.graph.query(
     'blocklytics/ethereum-blocks',
     `query ($startBlock: Int!, $endBlock: Int!){
        blocks(where: {number_gte: $startBlock, number_lte: $endBlock }, orderBy: number) {
@@ -100,6 +100,8 @@ export const getBurnedOnRecentBlocks = async () => {
       },
     }
   );
+
+  const [result, dateResults] = await Promise.all([burnQuery, dataQuery]);
 
   const burnedOnBlock: { block: number; burned: number; timestamp: number }[] = [];
   for (let i = 0; i <= 30; i += 1) {
