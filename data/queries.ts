@@ -1,11 +1,15 @@
 import sdk from './sdk';
 
+const SUBGRAPH = 'dmihal/eth-burned';
+const GRAPH_NODE = 'http://subgraph.ethburned.com';
+
 export const getTotalBurned = async () => {
   const result = await sdk.graph.query(
-    'dmihal/mainnet-eth-burned',
+    SUBGRAPH,
     `{
     ethburned(id:"1") {
       burned
+      burnedUSD
     }
     _meta {
       block {
@@ -14,12 +18,13 @@ export const getTotalBurned = async () => {
     }
   }`,
     {
-      node: 'http://subgraph.ethburned.com',
+      node: GRAPH_NODE,
     }
   );
 
   return {
     burned: parseFloat(result.ethburned?.burned || '0'),
+    burnedUSD: parseFloat(result.ethburned?.burnedUSD || '0'),
     block: parseInt(result._meta.block.number),
   };
 };
@@ -31,30 +36,38 @@ export const getBurnedLastHr = async () => {
   const yesterdayBlock = await sdk.chainData.getBlockNumber(yesterday, 'ethereum');
 
   const result = await sdk.graph.query(
-    'dmihal/mainnet-eth-burned',
+    SUBGRAPH,
     `query ($yesterdayBlock: Int!){
     now: ethburned(id:"1") {
       burned
+      burnedUSD
     }
     yesterday: ethburned(id:"1", block: { number: $yesterdayBlock }) {
       burned
+      burnedUSD
     }
   }`,
     {
       variables: { yesterdayBlock },
-      node: 'http://subgraph.ethburned.com',
+      node: GRAPH_NODE,
     }
   );
 
   if (!result.now) {
-    return 0;
+    return { burned: 0, burnedUSD: 0 };
   }
 
   if (!result.yesterday) {
-    return parseFloat(result.now.burned);
+    return {
+      burned: parseFloat(result.now.burned),
+      burnedUSD: parseFloat(result.now.burnedUSD),
+    };
   }
 
-  return result.now.burned - result.yesterday.burned;
+  return {
+    burned: result.now.burned - result.yesterday.burned,
+    burnedUSD: result.now.burnedUSD - result.yesterday.burnedUSD,
+  };
 };
 
 export const getBurnedOnRecentBlocks = async () => {
@@ -63,7 +76,7 @@ export const getBurnedOnRecentBlocks = async () => {
       block: { number: currentBlock },
     },
   } = await sdk.graph.query(
-    'dmihal/mainnet-eth-burned',
+    SUBGRAPH,
     `{
     _meta {
       block {
@@ -72,7 +85,7 @@ export const getBurnedOnRecentBlocks = async () => {
     }
   }`,
     {
-      node: 'http://subgraph.ethburned.com',
+      node: GRAPH_NODE,
     }
   );
 
@@ -81,8 +94,8 @@ export const getBurnedOnRecentBlocks = async () => {
     burnQueries.push(`block_${block}: ethburned(id: "1", block: { number: ${block} }) { burned }`);
   }
 
-  const burnQuery = sdk.graph.query('dmihal/mainnet-eth-burned', `{${burnQueries.join('\n')}}`, {
-    node: 'http://subgraph.ethburned.com',
+  const burnQuery = sdk.graph.query(SUBGRAPH, `{${burnQueries.join('\n')}}`, {
+    node: GRAPH_NODE,
   });
 
   const dataQuery = sdk.graph.query(

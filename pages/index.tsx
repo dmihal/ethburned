@@ -7,25 +7,34 @@ import SocialTags from 'components/SocialTags';
 
 interface HomeProps {
   total: number;
+  totalUSD: number;
   yesterday: number;
+  yesterdayUSD: number;
   currentBlock: number;
   blockTime: number;
 }
 
 const Chart = dynamic(() => import('components/Chart'), { ssr: false });
 
-const decimal = (num: number) =>
+const decimal = (num: number, maximumDecimals = 2) =>
   num.toLocaleString('en-us', {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 4,
+    maximumFractionDigits: maximumDecimals,
   });
 
 const LONDON_BLOCK = 12965000;
 
 const pad = (n: number) => (n < 10 ? '0' + n : n);
 
-export const Home: NextPage<HomeProps> = ({ total, yesterday, currentBlock, blockTime }) => {
-  const [data, setData] = useState({ total, yesterday, currentBlock });
+export const Home: NextPage<HomeProps> = ({
+  total,
+  totalUSD,
+  yesterday,
+  yesterdayUSD,
+  currentBlock,
+  blockTime,
+}) => {
+  const [data, setData] = useState({ total, totalUSD, yesterday, yesterdayUSD, currentBlock });
 
   useEffect(() => {
     let timer;
@@ -36,7 +45,9 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, currentBlock, bloc
         if (json.block != data.currentBlock) {
           setData({
             total: json.total,
+            totalUSD: json.totalUSD,
             yesterday: json.yesterday,
+            yesterdayUSD: json.yesterdayUSD,
             currentBlock: json.block,
           });
         }
@@ -101,11 +112,13 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, currentBlock, bloc
           <div className="row">
             <div className="card">
               <div className="big">{decimal(data.total)} ETH</div>
+              <div className="small">${decimal(data.totalUSD, 2)}</div>
               <div className="sub-text">Total burned</div>
             </div>
 
             <div className="card">
               <div className="big">{decimal(data.yesterday)} ETH</div>
+              <div className="small">${decimal(data.yesterdayUSD, 2)}</div>
               <div className="sub-text">Burned in the last hour</div>
             </div>
           </div>
@@ -208,14 +221,24 @@ export const Home: NextPage<HomeProps> = ({ total, yesterday, currentBlock, bloc
 };
 
 export const getStaticProps: GetStaticProps<HomeProps> = async () => {
-  const [{ burned: total }, yesterday, currentBlock, blockTime] = await Promise.all([
-    getTotalBurned(),
-    getBurnedLastHr(),
-    getCurrentBlock(),
-    getBlockTime(),
-  ]);
+  const [
+    { burned: total, burnedUSD: totalUSD },
+    { burned: yesterday, burnedUSD: yesterdayUSD },
+    currentBlock,
+    blockTime,
+  ] = await Promise.all([getTotalBurned(), getBurnedLastHr(), getCurrentBlock(), getBlockTime()]);
 
-  return { props: { total, yesterday, currentBlock, blockTime }, revalidate: 60 };
+  return {
+    props: {
+      total,
+      totalUSD,
+      yesterday,
+      yesterdayUSD,
+      currentBlock,
+      blockTime,
+    },
+    revalidate: 60,
+  };
 };
 
 export default Home;
