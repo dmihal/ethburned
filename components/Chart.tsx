@@ -42,7 +42,7 @@ const periodEntries = periods.map((value) => ({ value, label: periodLabels[value
 const periodZooms: { [period: string]: number } = {
   block: 5 * 60 * 1000,
   minute: 20 * 60 * 1000,
-  hour: 10 * 60 * 60 * 1000,
+  hour: 24 * 60 * 60 * 1000,
   day: 5 * 24 * 60 * 60 * 1000,
 };
 
