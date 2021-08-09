@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from 'react';
+import React, { useLayoutEffect, useRef, useEffect, useState } from 'react';
 import { Chart as ChartJS } from 'chart.js';
 import 'chartjs-adapter-luxon';
 import ChartStreaming from 'chartjs-plugin-streaming';
@@ -13,6 +13,7 @@ import {
   Tooltip,
   SubTitle,
 } from 'chart.js';
+import Select from './Select';
 
 ChartJS.register(AnnotationPlugin);
 ChartJS.register(ChartStreaming);
@@ -27,40 +28,97 @@ ChartJS.register([
   SubTitle,
 ]);
 
+const periods = [
+  { value: 'block', label: 'Block' },
+  { value: 'minute', label: 'Minute' },
+  { value: 'hour', label: 'Hour' },
+  { value: 'day', label: 'Day' },
+];
+
+const periodZooms: { [period: string]: number } = {
+  block: 5 * 60 * 1000,
+  minute: 20 * 60 * 1000,
+  hour: 10 * 60 * 60 * 1000,
+  day: 5 * 24 * 60 * 60 * 1000,
+};
+
+const titleFormatters: { [period: string]: (point: any) => string } = {
+  block: (point: any) => `Block ${point.block.toLocaleString()}`,
+  minute: (point: any) =>
+    new Intl.DateTimeFormat('default', {
+      hour: 'numeric',
+      minute: 'numeric',
+    }).format(new Date(point.x)),
+  hour: (point: any) =>
+    new Intl.DateTimeFormat('default', {
+      hour: 'numeric',
+      minute: 'numeric',
+    }).format(new Date(point.x)),
+  day: (point: any) =>
+    new Intl.DateTimeFormat('default', {
+      month: 'short',
+      day: 'numeric',
+    }).format(new Date(point.x)),
+};
+
 const Chart: React.FC = () => {
-  const maxBlock = useRef(0);
-  const data = useRef([]);
+  const data = useRef({ block: [], minute: [], hour: [], day: [] });
   const canvas = useRef<any>(null);
+  const chart = useRef<any>(null);
+  const [period, setPeriod] = useState('block');
 
-  const onRefresh = async (chart) => {
-    const req = await fetch('/api/v1/recent-blocks');
-    const json = await req.json();
+  const currentPeriod = useRef(period);
+  currentPeriod.current = period;
 
-    for (let i = 1; i < json.burnedOnBlock.length; i += 1) {
-      const blockData = json.burnedOnBlock[i];
-      if (blockData.block > maxBlock.current) {
-        maxBlock.current = blockData.block;
-        data.current.push({
-          x: blockData.timestamp * 1000,
-          y: blockData.burned - json.burnedOnBlock[i - 1].burned,
-          block: blockData.block,
-        });
-      }
+  const updateChart = async () => {
+    const currentDataSet = data.current[currentPeriod.current];
+
+    if (chart.current.data.datasets[0].data != currentDataSet) {
+      chart.current.data.datasets[0].data = currentDataSet;
+      chart.current.options.scales.x.realtime.duration = periodZooms[currentPeriod.current];
+      chart.current.options.plugins.annotation.annotations[0].display =
+        currentPeriod.current === 'block';
+      chart.current.update('quiet');
     }
 
-    chart.data.datasets[0].data = data.current;
-    chart.update('quiet');
+    const url =
+      currentPeriod.current === 'block'
+        ? '/api/v1/recent-blocks'
+        : `/api/v1/recently-burned/${currentPeriod.current}`;
+    const req = await fetch(url);
+    const json = await req.json();
+
+    const lastBlock =
+      currentDataSet.length > 0 ? currentDataSet[currentDataSet.length - 1].block : 0;
+    const lastNewBlock = json.burned[json.burned.length - 1].block;
+
+    if (lastNewBlock > lastBlock) {
+      data.current[currentPeriod.current] = json.burned
+        .slice(1)
+        .map((blockData: any, i: number) => ({
+          x: blockData.timestamp * 1000,
+          y: blockData.burned - json.burned[i].burned, // i is the previous element, due to the slice
+          block: blockData.block,
+        }));
+
+      chart.current.data.datasets[0].data = data.current[currentPeriod.current];
+      chart.current.update('quiet');
+    }
   };
+
+  useEffect(() => {
+    updateChart();
+  }, [period]);
 
   const options = {
     scales: {
       x: {
         type: 'realtime' as 'realtime',
         realtime: {
-          duration: 5 * 60 * 1000,
+          duration: periodZooms[period],
           refresh: 2500,
           delay: 2000,
-          onRefresh: onRefresh,
+          onRefresh: updateChart,
         },
         ticks: {
           font: {
@@ -95,11 +153,12 @@ const Chart: React.FC = () => {
         },
         callbacks: {
           title(ctx: any) {
-            // console.log(ctx);
-            return ctx[0].raw ? `Block ${ctx[0].raw.block.toLocaleString()}` : '';
+            if (!ctx[0].raw) {
+              return '';
+            }
+            return titleFormatters[currentPeriod.current](ctx[0].raw);
           },
           label(ctx: any) {
-            // console.log(ctx);
             return ctx.parsed.y.toLocaleString('en-us', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 6,
@@ -160,14 +219,18 @@ const Chart: React.FC = () => {
       },
       options,
     };
-    const chart = new ChartJS(canvas.current, config);
+    const _chart = new ChartJS(canvas.current, config);
+    chart.current = _chart;
 
-    return () => chart.destroy();
+    return () => _chart.destroy();
   }, []);
 
   return (
     <div className="chart-container">
       <canvas ref={canvas} />
+
+      <Select options={periods} value={period} onChange={setPeriod} width={100} />
+
       <style jsx>{`
         .chart-container {
           width: 100%;

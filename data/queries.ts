@@ -137,6 +137,75 @@ export const getBurnedOnRecentBlocks = async () => {
   return burnedOnBlock;
 };
 
+export const getBurnedOnRecentTimePeriod = async (period: string) => {
+  if (['minute', 'hour', 'day'].indexOf(period) === -1) {
+    throw new Error(`Invalid period ${period}`);
+  }
+
+  const date = new Date();
+  let periodLength: number;
+  if (period === 'day') {
+    date.setHours(0, 0, 0, 0);
+    periodLength = 24 * 60 * 60;
+  } else if (period === 'hour') {
+    date.setMinutes(0, 0, 0);
+    periodLength = 60 * 60;
+  } else {
+    // minute
+    date.setSeconds(0, 0);
+    periodLength = 60;
+  }
+
+  const blockQueries = [];
+  const timestamps = [];
+  for (let i = 0; i < 30; i += 1) {
+    const timestamp = date.getTime() / 1000 - periodLength * i;
+    timestamps.push(timestamp);
+    blockQueries.push(`block_${i}: blocks(where: {
+      timestamp_gte: ${timestamp},
+      timestamp_lte: ${timestamp + 100}
+    }, orderBy: number, limit: 1) {
+      number
+    }`);
+  }
+  const blockResult = await sdk.graph.query(
+    'blocklytics/ethereum-blocks',
+    `{${blockQueries.join('\n')}}`
+  );
+
+  const blocks = [];
+  const burnQueries = [];
+  for (let i = 0; i < 30; i += 1) {
+    if (blockResult[`block_${i}`].length === 0) {
+      blocks.push(0);
+      continue;
+    }
+
+    const blockNum = blockResult[`block_${i}`][0].number;
+    blocks.push(parseInt(blockNum));
+    burnQueries.push(`burned_${i}: ethburned(id:"1", block: { number: ${blockNum} }){ burned }`);
+  }
+
+  const burnResult = await sdk.graph.query(SUBGRAPH, `{${burnQueries.join('\n')}}`, {
+    node: GRAPH_NODE,
+  });
+
+  const response = [];
+  for (let i = 0; i < 30; i += 1) {
+    if (blocks[i] === 0) {
+      continue;
+    }
+
+    response.push({
+      burned: parseFloat(burnResult[`burned_${i}`]?.burned || '0'),
+      timestamp: timestamps[i],
+      block: blocks[i],
+    });
+  }
+
+  return response.reverse();
+};
+
 export const getCurrentBlock = async () => {
   const blockResult = await sdk.graph.query(
     'blocklytics/ethereum-blocks',
