@@ -28,12 +28,16 @@ ChartJS.register([
   SubTitle,
 ]);
 
-const periods = [
-  { value: 'block', label: 'Block' },
-  { value: 'minute', label: 'Minute' },
-  { value: 'hour', label: 'Hour' },
-  { value: 'day', label: 'Day' },
-];
+const periods = ['block', 'minute', 'hour', 'day'];
+
+const periodLabels: { [period: string]: string } = {
+  block: 'Block',
+  minute: 'Minute',
+  hour: 'Hour',
+  day: 'Day',
+};
+
+const periodEntries = periods.map((value) => ({ value, label: periodLabels[value] }));
 
 const periodZooms: { [period: string]: number } = {
   block: 5 * 60 * 1000,
@@ -75,6 +79,7 @@ const Chart: React.FC = () => {
 
     if (chart.current.data.datasets[0].data != currentDataSet) {
       chart.current.data.datasets[0].data = currentDataSet;
+      chart.current.options.plugins.title.text = `ETH burned per ${currentPeriod.current}`;
       chart.current.options.scales.x.realtime.duration = periodZooms[currentPeriod.current];
       chart.current.options.plugins.annotation.annotations[0].display =
         currentPeriod.current === 'block';
@@ -93,13 +98,23 @@ const Chart: React.FC = () => {
     const lastNewBlock = json.burned[json.burned.length - 1].block;
 
     if (lastNewBlock > lastBlock) {
-      data.current[currentPeriod.current] = json.burned
-        .slice(1)
-        .map((blockData: any, i: number) => ({
-          x: blockData.timestamp * 1000,
-          y: blockData.burned - json.burned[i].burned, // i is the previous element, due to the slice
-          block: blockData.block,
-        }));
+      if (currentPeriod.current === 'block') {
+        data.current[currentPeriod.current] = json.burned
+          .slice(1)
+          .map((blockData: any, i: number) => ({
+            x: blockData.timestamp * 1000,
+            y: blockData.burned - json.burned[i].burned, // i is the previous element, due to the slice
+            block: blockData.block,
+          }));
+      } else {
+        data.current[currentPeriod.current] = json.burned
+          .slice(0, -1)
+          .map((blockData: any, i: number) => ({
+            x: blockData.timestamp * 1000,
+            y: json.burned[i + 1].burned - blockData.burned,
+            block: blockData.block,
+          }));
+      }
 
       chart.current.data.datasets[0].data = data.current[currentPeriod.current];
       chart.current.update('quiet');
@@ -229,7 +244,7 @@ const Chart: React.FC = () => {
     <div className="chart-container">
       <canvas ref={canvas} />
 
-      <Select options={periods} value={period} onChange={setPeriod} width={100} />
+      <Select options={periodEntries} value={period} onChange={setPeriod} width={100} />
 
       <style jsx>{`
         .chart-container {

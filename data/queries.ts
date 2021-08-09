@@ -186,11 +186,20 @@ export const getBurnedOnRecentTimePeriod = async (period: string) => {
     burnQueries.push(`burned_${i}: ethburned(id:"1", block: { number: ${blockNum} }){ burned }`);
   }
 
+  burnQueries.push('now: ethburned(id:"1") { burned }');
+  burnQueries.push('_meta { block { number } }');
+
   const burnResult = await sdk.graph.query(SUBGRAPH, `{${burnQueries.join('\n')}}`, {
     node: GRAPH_NODE,
   });
 
-  const response = [];
+  const response = [
+    {
+      burned: parseFloat(burnResult.now.burned),
+      timestamp: Math.floor(Date.now() / 1000),
+      block: parseInt(burnResult._meta.block.number),
+    },
+  ];
   for (let i = 0; i < 30; i += 1) {
     if (blocks[i] === 0) {
       continue;
