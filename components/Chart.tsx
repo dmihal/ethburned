@@ -28,10 +28,11 @@ ChartJS.register([
   SubTitle,
 ]);
 
-const periods = ['block', 'minute', 'hour', 'day'];
+const periods = ['block', 'blockIssuance', 'minute', 'hour', 'day'];
 
 const periodLabels: { [period: string]: string } = {
   block: 'Block',
+  blockIssuance: 'Net issuance per block',
   minute: 'Minute',
   hour: 'Hour',
   day: 'Day',
@@ -41,6 +42,7 @@ const periodEntries = periods.map((value) => ({ value, label: periodLabels[value
 
 const periodZooms: { [period: string]: number } = {
   block: 5 * 60 * 1000,
+  blockIssuance: 5 * 60 * 1000,
   minute: 20 * 60 * 1000,
   hour: 24 * 60 * 60 * 1000,
   day: 5 * 24 * 60 * 60 * 1000,
@@ -48,6 +50,7 @@ const periodZooms: { [period: string]: number } = {
 
 const titleFormatters: { [period: string]: (point: any) => string } = {
   block: (point: any) => `Block ${point.block.toLocaleString()}`,
+  blockIssuance: (point: any) => `Block ${point.block.toLocaleString()}`,
   minute: (point: any) =>
     new Intl.DateTimeFormat('default', {
       hour: 'numeric',
@@ -66,7 +69,7 @@ const titleFormatters: { [period: string]: (point: any) => string } = {
 };
 
 const Chart: React.FC = () => {
-  const data = useRef({ block: [], minute: [], hour: [], day: [] });
+  const data = useRef({ block: [], blockIssuance: [], minute: [], hour: [], day: [] });
   const canvas = useRef<any>(null);
   const chart = useRef<any>(null);
   const [period, setPeriod] = useState('block');
@@ -87,7 +90,7 @@ const Chart: React.FC = () => {
     }
 
     const url =
-      currentPeriod.current === 'block'
+      currentPeriod.current === 'block' || currentPeriod.current === 'blockIssuance'
         ? '/api/v1/recent-blocks'
         : `/api/v1/recently-burned/${currentPeriod.current}`;
     const req = await fetch(url);
@@ -106,6 +109,25 @@ const Chart: React.FC = () => {
             y: blockData.burned - json.burned[i].burned, // i is the previous element, due to the slice
             block: blockData.block,
           }));
+      } else if (period.current === 'blockIssuance') {
+        const issuanceByBlock: { [block: number]: number } = {};
+        for (const issued of json.issued) {
+          if (issued.issued) {
+            issuanceByBlock[issued.block] = issued.issued;
+          }
+        }
+
+        data.current.blockIssuance = json.burned
+          .slice(1)
+          .map(
+            (blockData: any, i: number) =>
+              issuanceByBlock[blockData.block] && {
+                x: blockData.timestamp * 1000,
+                y: issuanceByBlock[blockData.block] - (blockData.burned - json.burned[i].burned),
+                block: blockData.block,
+              }
+          )
+          .filter((item) => item);
       } else {
         data.current[currentPeriod.current] = json.burned
           .slice(0, -1)

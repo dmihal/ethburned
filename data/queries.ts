@@ -251,3 +251,20 @@ export const getBlockTime = async () => {
 
   return (currentBlockResult.blocks[0].timestamp - oldBlockResult.blocks[0].timestamp) / NUM_BLOCKS;
 };
+
+export const getIssuedOnRecentBlocks = async () => {
+  const currentBlock = await getCurrentBlock();
+
+  const blocks: number[] = [];
+
+  for (let i = 0; i < 30; i += 1) {
+    const blockNum = currentBlock - i;
+    blocks.push(blockNum);
+  }
+
+  const req = await fetch(`http://subgraph.ethburned.com:8000/blocks/${blocks.join(',')}`);
+  const json = await req.json();
+
+  const issued = blocks.map((block) => ({ block, issued: json.result[block] }));
+  return issued;
+};
