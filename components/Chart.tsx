@@ -45,7 +45,15 @@ const periodZooms: { [period: string]: number } = {
   blockIssuance: 5 * 60 * 1000,
   minute: 20 * 60 * 1000,
   hour: 24 * 60 * 60 * 1000,
-  day: 5 * 24 * 60 * 60 * 1000,
+  day: 14 * 24 * 60 * 60 * 1000,
+};
+
+const titles: { [period: string]: string } = {
+  block: 'ETH burned per block',
+  blockIssuance: 'Net ETH issued per block',
+  minute: 'ETH burned per minute',
+  hour: 'ETH burned per hour',
+  day: 'ETH burned per day',
 };
 
 const titleFormatters: { [period: string]: (point: any) => string } = {
@@ -82,10 +90,8 @@ const Chart: React.FC = () => {
 
     if (chart.current.data.datasets[0].data != currentDataSet) {
       chart.current.data.datasets[0].data = currentDataSet;
-      chart.current.options.plugins.title.text = `ETH burned per ${currentPeriod.current}`;
+      chart.current.options.plugins.title.text = titles[currentPeriod.current];
       chart.current.options.scales.x.realtime.duration = periodZooms[currentPeriod.current];
-      chart.current.options.plugins.annotation.annotations[0].display =
-        currentPeriod.current === 'block';
       chart.current.update('quiet');
     }
 
@@ -109,7 +115,7 @@ const Chart: React.FC = () => {
             y: blockData.burned - json.burned[i].burned, // i is the previous element, due to the slice
             block: blockData.block,
           }));
-      } else if (period.current === 'blockIssuance') {
+      } else if (currentPeriod.current === 'blockIssuance') {
         const issuanceByBlock: { [block: number]: number } = {};
         for (const issued of json.issued) {
           if (issued.issued) {
@@ -202,6 +208,9 @@ const Chart: React.FC = () => {
             });
           },
           afterLabel() {
+            if (currentPeriod.current === 'blockIssuance') {
+              return 'Net ETH issued';
+            }
             return 'ETH burned';
           },
         },
