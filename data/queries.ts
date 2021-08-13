@@ -265,6 +265,14 @@ export const getIssuedOnRecentBlocks = async () => {
   const req = await fetch(`http://subgraph.ethburned.com:8000/blocks/${blocks.join(',')}`);
   const json = await req.json();
 
-  const issued = blocks.map((block) => ({ block, issued: json.result[block] }));
+  const issued = blocks.map((block) => ({ block, issued: json.result[block].issuance }));
+  return issued;
+};
+
+export const getIssuedOnBlocks = async (blocks: number[]) => {
+  const req = await fetch(`http://subgraph.ethburned.com:8000/blocks/${blocks.join(',')}`);
+  const json = await req.json();
+
+  const issued = blocks.map((block) => ({ block, issued: json.result[block].issuance }));
   return issued;
 };
