@@ -92,6 +92,8 @@ const Chart: React.FC = () => {
       chart.current.data.datasets[0].data = currentDataSet;
       chart.current.options.plugins.title.text = titles[currentPeriod.current];
       chart.current.options.scales.x.realtime.duration = periodZooms[currentPeriod.current];
+      chart.current.options.plugins.annotation.annotations[0].display =
+        currentPeriod.current === 'block';
       chart.current.update('quiet');
     }
 
