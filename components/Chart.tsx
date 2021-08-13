@@ -159,6 +159,7 @@ const Chart: React.FC = () => {
     scales: {
       x: {
         type: 'realtime' as 'realtime',
+        min: 0,
         realtime: {
           duration: periodZooms[period],
           refresh: 2500,
@@ -172,6 +173,11 @@ const Chart: React.FC = () => {
         },
       },
       y: {
+        grid: {
+          color(ctx: any) {
+            return ctx.tick.value === 0 ? '#222222' : '#e0e1e2';
+          },
+        },
         title: {
           display: false,
         },
