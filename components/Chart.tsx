@@ -43,7 +43,7 @@ const periodZooms: { [period: string]: number } = {
   block: 5 * 60 * 1000,
   minute: 20 * 60 * 1000,
   hour: 24 * 60 * 60 * 1000,
-  day: 5 * 24 * 60 * 60 * 1000,
+  day: 14 * 24 * 60 * 60 * 1000,
 };
 
 const titleFormatters: { [period: string]: (point: any) => string } = {
