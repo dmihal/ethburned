@@ -2,8 +2,10 @@ import React, { useEffect } from 'react';
 import Head from 'next/head';
 import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
+import PlausibleProvider from 'next-plausible';
 import ReactGA from 'react-ga4';
 import Header from 'components/Header';
+import Footer from 'components/Footer';
 
 ReactGA.initialize('G-9SBZ9ZN8GG');
 
@@ -21,48 +23,20 @@ const App: React.FC<AppProps> = ({ Component, pageProps }) => {
         <title key="title">EthBurned.info</title>
         <link rel="icon" href="/favicon.png" />
         <link href="https://use.typekit.net/jrq0bbf.css" rel="stylesheet" />
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/react-datepicker/3.6.0/react-datepicker.min.css"
-        />
         <link rel="preconnect" href="https://fonts.gstatic.com" />
         <link
           href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&amp;display=swap"
           rel="stylesheet"
         />
-        <script
-          async
-          defer
-          data-domain="ethburned.info"
-          src="https://analytics.cryptostats.community/js/plausible.js"
-        />
       </Head>
 
-      <Header />
+      <PlausibleProvider domain="ethburned.info">
+        <Header />
 
-      <Component {...pageProps} />
+        <Component {...pageProps} />
 
-      <footer>
-        <div>Data updates continuously</div>
-        <div>
-          Created by{' '}
-          <a href="https://twitter.com/dmihal" target="twitter">
-            David Mihal
-          </a>
-        </div>
-
-        <div>
-          <a href="https://cryptofees.info">cryptofees.info</a>
-          {' | '}
-          <a href="https://ethereumnodes.com">ethereumnodes.com</a>
-          {' | '}
-          <a href="https://money-movers.info">money-movers.info</a>
-          {' | '}
-          <a href="https://open-orgs.info">open-orgs.info</a>
-          {' | '}
-          <b>ethburned.info</b>
-        </div>
-      </footer>
+        <Footer />
+      </PlausibleProvider>
 
       <style jsx>{`
         .container {
