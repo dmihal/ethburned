@@ -1,7 +1,7 @@
 import sdk from './sdk';
 
 const SUBGRAPH = 'dmihal/eth-burned';
-const GRAPH_NODE = 'http://subgraph.ethburned.com';
+const GRAPH_NODE = 'https://subgraph.ethburned.com';
 
 export const getTotalBurned = async () => {
   const result = await sdk.graph.query(
