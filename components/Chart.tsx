@@ -146,6 +146,7 @@ const Chart: React.FC = () => {
           display: false,
         },
         ticks: {
+          min: 0,
           display: false,
         },
       },
