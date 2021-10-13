@@ -2,8 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getBurnedOnRecentTimePeriod } from 'data/queries';
 
 const cacheTime: { [period: string]: number } = {
-  minute: 15,
-  hour: 60,
+  minute: 30,
+  hour: 60 * 5,
   day: 60 * 10,
 };
 
