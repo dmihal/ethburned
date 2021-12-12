@@ -1,17 +1,15 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NextPage, GetStaticProps } from 'next';
 import dynamic from 'next/dynamic';
-import Countdown from 'react-countdown';
-import { getTotalBurned, getBurnedLastHr, getCurrentBlock, getBlockTime } from 'data/queries';
 import SocialTags from 'components/SocialTags';
+import { getAdapter } from 'data/sdk';
 
 interface HomeProps {
   total: number;
   totalUSD: number;
-  yesterday: number;
-  yesterdayUSD: number;
+  lastHourBurned: number;
+  lastHourBurnedUSD: number;
   currentBlock: number;
-  blockTime: number;
 }
 
 const Chart = dynamic(() => import('components/Chart'), { ssr: false });
@@ -22,33 +20,48 @@ const decimal = (num: number, maximumDecimals = 2) =>
     maximumFractionDigits: maximumDecimals,
   });
 
-const LONDON_BLOCK = 12965000;
-
-const pad = (n: number) => (n < 10 ? '0' + n : n);
-
 export const Home: NextPage<HomeProps> = ({
   total,
   totalUSD,
-  yesterday,
-  yesterdayUSD,
+  lastHourBurned,
+  lastHourBurnedUSD,
   currentBlock,
-  blockTime,
 }) => {
-  const [data, setData] = useState({ total, totalUSD, yesterday, yesterdayUSD, currentBlock });
+  const [data, setData] = useState({
+    total,
+    totalUSD,
+    lastHourBurned,
+    lastHourBurnedUSD,
+    currentBlock,
+  });
 
   useEffect(() => {
     let timer;
     const refresh = async () => {
       try {
-        const req = await fetch('/api/v1/burned');
-        const json = await req.json();
-        if (json.block != data.currentBlock) {
+        const adapter = await getAdapter();
+
+        const [
+          _total,
+          _totalUSD,
+          _lastHourBurned,
+          _lastHourBurnedUSD,
+          _currentBlock,
+        ] = await Promise.all([
+          adapter.executeQuery('tokensBurnedTotal'),
+          adapter.executeQuery('tokensBurnedTotalUSD'),
+          adapter.executeQuery('tokensBurnedInRecentSeconds', 60 * 60),
+          adapter.executeQuery('tokensBurnedInRecentSecondsUSD', 60 * 60),
+          adapter.executeQuery('currentIndexedBlock'),
+        ]);
+
+        if (_currentBlock != data.currentBlock) {
           setData({
-            total: json.total,
-            totalUSD: json.totalUSD,
-            yesterday: json.yesterday,
-            yesterdayUSD: json.yesterdayUSD,
-            currentBlock: json.block,
+            total: _total,
+            totalUSD: _totalUSD,
+            lastHourBurned: _lastHourBurned,
+            lastHourBurnedUSD: _lastHourBurnedUSD,
+            currentBlock: _currentBlock,
           });
         }
       } catch (e) {
@@ -60,11 +73,6 @@ export const Home: NextPage<HomeProps> = ({
 
     return () => clearTimeout(timer);
   }, []);
-
-  let startDate: null | Date = null;
-  if (data.currentBlock < LONDON_BLOCK) {
-    startDate = new Date(Date.now() + (LONDON_BLOCK - data.currentBlock) * blockTime * 1000);
-  }
 
   return (
     <main>
@@ -78,54 +86,21 @@ export const Home: NextPage<HomeProps> = ({
         The more ETH is burned
       </p>
 
-      {data.currentBlock < LONDON_BLOCK ? (
-        <Fragment>
-          <div className="row">
-            <div className="card">
-              <div className="big">{LONDON_BLOCK - data.currentBlock}</div>
-              <div className="sub-text">Blocks remaining</div>
-            </div>
+      <div className="row">
+        <div className="card">
+          <div className="big">{decimal(data.total)} ETH</div>
+          <div className="small">${decimal(data.totalUSD, 2)}</div>
+          <div className="sub-text">Total burned</div>
+        </div>
 
-            <div className="card">
-              <div className="big">
-                <Countdown
-                  date={startDate || 0}
-                  renderer={({ hours, minutes, seconds }) =>
-                    `${hours}:${pad(minutes)}:${pad(seconds)}`
-                  }
-                />
-              </div>
-              <div className="sub-text">Time remaining</div>
-            </div>
-          </div>
-          <div className="event-container">
-            <p className="event-headline">
-              London upgrade:{' '}
-              {new Intl.DateTimeFormat('en-US', { dateStyle: 'full', timeStyle: 'long' }).format(
-                startDate
-              )}
-            </p>
-          </div>
-        </Fragment>
-      ) : (
-        <Fragment>
-          <div className="row">
-            <div className="card">
-              <div className="big">{decimal(data.total)} ETH</div>
-              <div className="small">${decimal(data.totalUSD, 2)}</div>
-              <div className="sub-text">Total burned</div>
-            </div>
+        <div className="card">
+          <div className="big">{decimal(data.lastHourBurned)} ETH</div>
+          <div className="small">${decimal(data.lastHourBurnedUSD, 2)}</div>
+          <div className="sub-text">Burned in the last hour</div>
+        </div>
+      </div>
 
-            <div className="card">
-              <div className="big">{decimal(data.yesterday)} ETH</div>
-              <div className="small">${decimal(data.yesterdayUSD, 2)}</div>
-              <div className="sub-text">Burned in the last hour</div>
-            </div>
-          </div>
-
-          <Chart />
-        </Fragment>
-      )}
+      <Chart />
 
       <div className="block-num">Block: {data.currentBlock}</div>
 
@@ -221,21 +196,23 @@ export const Home: NextPage<HomeProps> = ({
 };
 
 export const getStaticProps: GetStaticProps<HomeProps> = async () => {
-  const [
-    { burned: total, burnedUSD: totalUSD },
-    { burned: yesterday, burnedUSD: yesterdayUSD },
-    currentBlock,
-    blockTime,
-  ] = await Promise.all([getTotalBurned(), getBurnedLastHr(), getCurrentBlock(), getBlockTime()]);
+  const adapter = await getAdapter();
+
+  const [total, totalUSD, lastHourBurned, lastHourBurnedUSD, currentBlock] = await Promise.all([
+    adapter.executeQuery('tokensBurnedTotal'),
+    adapter.executeQuery('tokensBurnedTotalUSD'),
+    adapter.executeQuery('tokensBurnedInRecentSeconds', 60 * 60),
+    adapter.executeQuery('tokensBurnedInRecentSecondsUSD', 60 * 60),
+    adapter.executeQuery('currentIndexedBlock'),
+  ]);
 
   return {
     props: {
       total,
       totalUSD,
-      yesterday,
-      yesterdayUSD,
+      lastHourBurned,
+      lastHourBurnedUSD,
       currentBlock,
-      blockTime,
     },
     revalidate: 60,
   };
