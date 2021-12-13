@@ -15,6 +15,7 @@ import {
 } from 'chart.js';
 import Select from './Select';
 import { getAdapter } from 'data/sdk';
+import { usePlausible } from 'next-plausible';
 
 ChartJS.register(AnnotationPlugin);
 ChartJS.register(ChartStreaming);
@@ -69,6 +70,7 @@ const titleFormatters: { [period: string]: (point: any) => string } = {
 };
 
 const Chart: React.FC = () => {
+  const plausible = usePlausible();
   const data = useRef({ block: [], minute: [], hour: [], day: [] });
   const canvas = useRef<any>(null);
   const chart = useRef<any>(null);
@@ -252,7 +254,17 @@ const Chart: React.FC = () => {
     <div className="chart-container">
       <canvas ref={canvas} />
 
-      <Select options={periodEntries} value={period} onChange={setPeriod} width={100} />
+      <Select
+        options={periodEntries}
+        value={period}
+        onChange={(newPeriod: string) => {
+          setPeriod(newPeriod);
+          plausible('set-chart-period', {
+            props: { period: newPeriod },
+          });
+        }}
+        width={100}
+      />
 
       <style jsx>{`
         .chart-container {
