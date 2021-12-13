@@ -40,6 +40,8 @@ const periodLabels: { [period: string]: string } = {
 
 const periodEntries = periods.map((value) => ({ value, label: periodLabels[value] }));
 
+const REFRESH_SPEED = 3000;
+
 const periodZooms: { [period: string]: number } = {
   block: 5 * 60 * 1000,
   minute: 20 * 60 * 1000,
@@ -136,7 +138,7 @@ const Chart: React.FC = () => {
         type: 'realtime' as 'realtime',
         realtime: {
           duration: periodZooms[period],
-          refresh: 2500,
+          refresh: REFRESH_SPEED,
           delay: 2000,
           onRefresh: updateChart,
         },

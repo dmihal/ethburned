@@ -12,6 +12,8 @@ interface HomeProps {
   currentBlock: number;
 }
 
+const REFRESH_SPEED = 4000;
+
 const Chart = dynamic(() => import('components/Chart'), { ssr: false });
 
 const decimal = (num: number, maximumDecimals = 2) =>
@@ -67,9 +69,9 @@ export const Home: NextPage<HomeProps> = ({
       } catch (e) {
         console.warn(e);
       }
-      timer = setTimeout(refresh, 2500);
+      timer = setTimeout(refresh, REFRESH_SPEED);
     };
-    timer = setTimeout(refresh, 2500);
+    timer = setTimeout(refresh, REFRESH_SPEED);
 
     return () => clearTimeout(timer);
   }, []);
