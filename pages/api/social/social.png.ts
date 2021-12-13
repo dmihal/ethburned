@@ -4,21 +4,18 @@ import ReactDOMServer from 'react-dom/server';
 import React from 'react';
 import path from 'path';
 import SocialCard from 'components/SocialCard/SocialCard';
-import { getTotalBurned } from 'data/queries';
+import { getAdapter } from 'data/sdk';
 
 // These statements causes Next to bundle these files
 path.resolve(process.cwd(), 'fonts', 'fonts.conf');
 path.resolve(process.cwd(), 'fonts', 'SofiaProRegular.ttf');
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { block, burned } = await getTotalBurned();
+  const adapter = await getAdapter();
 
-  const svg = ReactDOMServer.renderToString(
-    React.createElement(SocialCard, {
-      block,
-      burned,
-    })
-  );
+  const burned = await adapter.executeQuery('tokensBurnedTotal');
+
+  const svg = ReactDOMServer.renderToString(React.createElement(SocialCard, { burned }));
 
   const buffer = Buffer.from(svg);
   const output = await sharp(buffer, { density: 300 }).toFormat('png').toBuffer();

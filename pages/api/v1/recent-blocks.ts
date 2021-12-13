@@ -1,8 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getBurnedOnRecentBlocks } from 'data/queries';
+import { getAdapter } from 'data/sdk';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const burned = await getBurnedOnRecentBlocks();
+  const adapter = await getAdapter();
+  const burned = await adapter.executeQuery('tokensBurnedInRecentBlocks', 30);
 
   res.setHeader('Cache-Control', 'max-age=0, s-maxage=10, stale-while-revalidate');
   res.json({

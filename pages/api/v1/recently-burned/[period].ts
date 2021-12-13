@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getBurnedOnRecentTimePeriod } from 'data/queries';
+import { getAdapter } from 'data/sdk';
 
 const cacheTime: { [period: string]: number } = {
   minute: 30,
@@ -8,7 +8,12 @@ const cacheTime: { [period: string]: number } = {
 };
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const burned = await getBurnedOnRecentTimePeriod(req.query.period.toString());
+  const adapter = await getAdapter();
+  const burned = await adapter.executeQuery(
+    'tokensBurnedInRecentTimePeriods',
+    req.query.period.toString(),
+    30
+  );
 
   const cache = cacheTime[req.query.period.toString()];
   res.setHeader('Cache-Control', `max-age=0, s-maxage=${cache}, stale-while-revalidate`);

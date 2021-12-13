@@ -1,11 +1,16 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getTotalBurned, getBurnedLastHr } from 'data/queries';
+import { getAdapter } from 'data/sdk';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const [
-    { burned: total, burnedUSD: totalUSD, block },
-    { burned: yesterday, burnedUSD: yesterdayUSD },
-  ] = await Promise.all([getTotalBurned(), getBurnedLastHr()]);
+  const adapter = await getAdapter();
+
+  const [total, totalUSD, lastHourBurned, lastHourBurnedUSD, block] = await Promise.all([
+    adapter.executeQuery('tokensBurnedTotal'),
+    adapter.executeQuery('tokensBurnedTotalUSD'),
+    adapter.executeQuery('tokensBurnedInRecentSeconds', 60 * 60),
+    adapter.executeQuery('tokensBurnedInRecentSecondsUSD', 60 * 60),
+    adapter.executeQuery('currentIndexedBlock'),
+  ]);
 
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader(
@@ -22,8 +27,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     success: true,
     total,
     totalUSD,
-    yesterday,
-    yesterdayUSD,
+    lastHourBurned,
+    lastHourBurnedUSD,
     block,
   });
 };

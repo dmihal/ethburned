@@ -14,6 +14,7 @@ import {
   SubTitle,
 } from 'chart.js';
 import Select from './Select';
+import { getAdapter } from 'data/sdk';
 
 ChartJS.register(AnnotationPlugin);
 ChartJS.register(ChartStreaming);
@@ -75,6 +76,8 @@ const Chart: React.FC = () => {
   currentPeriod.current = period;
 
   const updateChart = async () => {
+    const adapter = await getAdapter();
+
     const currentDataSet = data.current[currentPeriod.current];
 
     if (chart.current.data.datasets[0].data != currentDataSet) {
@@ -86,32 +89,34 @@ const Chart: React.FC = () => {
       chart.current.update('quiet');
     }
 
-    const url =
-      currentPeriod.current === 'block'
-        ? '/api/v1/recent-blocks'
-        : `/api/v1/recently-burned/${currentPeriod.current}`;
-    const req = await fetch(url);
-    const json = await req.json();
+    let burned: any[];
+    if (currentPeriod.current === 'block') {
+      burned = await adapter.executeQuery('tokensBurnedInRecentBlocks', 30);
+    } else {
+      burned = await adapter.executeQuery(
+        'tokensBurnedInRecentTimePeriods',
+        currentPeriod.current,
+        30
+      );
+    }
 
     const lastBlock =
       currentDataSet.length > 0 ? currentDataSet[currentDataSet.length - 1].block : 0;
-    const lastNewBlock = json.burned[json.burned.length - 1].block;
+    const lastNewBlock = burned[burned.length - 1].block;
 
     if (lastNewBlock > lastBlock) {
       if (currentPeriod.current === 'block') {
-        data.current[currentPeriod.current] = json.burned
-          .slice(1)
-          .map((blockData: any, i: number) => ({
-            x: blockData.timestamp * 1000,
-            y: blockData.burned - json.burned[i].burned, // i is the previous element, due to the slice
-            block: blockData.block,
-          }));
+        data.current[currentPeriod.current] = burned.slice(1).map((blockData: any, i: number) => ({
+          x: blockData.timestamp * 1000,
+          y: blockData.burned - burned[i].burned, // i is the previous element, due to the slice
+          block: blockData.block,
+        }));
       } else {
-        data.current[currentPeriod.current] = json.burned
+        data.current[currentPeriod.current] = burned
           .slice(0, -1)
           .map((blockData: any, i: number) => ({
             x: blockData.timestamp * 1000,
-            y: json.burned[i + 1].burned - blockData.burned,
+            y: burned[i + 1].burned - blockData.burned,
             block: blockData.block,
           }));
       }
