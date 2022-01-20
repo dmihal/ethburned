@@ -45,9 +45,9 @@ const REFRESH_SPEED = 3000;
 
 const periodZooms: { [period: string]: number } = {
   block: 5 * 60 * 1000,
-  minute: 20 * 60 * 1000,
-  hour: 24 * 60 * 60 * 1000,
-  day: 14 * 24 * 60 * 60 * 1000,
+  minute: 29 * 60 * 1000,
+  hour: 26 * 60 * 60 * 1000,
+  day: 21 * 24 * 60 * 60 * 1000,
 };
 
 const titleFormatters: { [period: string]: (point: any) => string } = {
@@ -151,6 +151,7 @@ const Chart: React.FC = () => {
         },
       },
       y: {
+        min: 0,
         title: {
           display: false,
         },
