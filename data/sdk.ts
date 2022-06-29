@@ -1,8 +1,6 @@
 import { Adapter, CryptoStatsSDK } from '@cryptostats/sdk';
 
-const sdk = new CryptoStatsSDK({
-  adapterListSubgraph: 'dmihal/cryptostats-adapter-registry-test',
-});
+const sdk = new CryptoStatsSDK();
 
 export default sdk;
 
@@ -16,8 +14,14 @@ export function getAdapter() {
 }
 
 async function getAdapterImpl() {
-  const list = sdk.getList('eth-burned');
-  await list.fetchAdapters();
+  const list = sdk.getCollection('eth-burned');
+  const isServer = typeof window === 'undefined';
+
+  if (isServer) {
+    await list.fetchAdapters();
+  } else {
+    await list.fetchAdapterFromIPFS('QmXQDGDAn9v8BBYzXdNhVQeAEqTacHx3qK5cW6mTPXFM8H');
+  }
   const adapter = list.getAdapter('eth-burned');
   return adapter;
 }
