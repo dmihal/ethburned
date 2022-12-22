@@ -4,8 +4,9 @@ import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
 import PlausibleProvider from 'next-plausible';
 import ReactGA from 'react-ga4';
-import Header from 'components/Header';
+import { Header } from '@cryptostats/header.header';
 import Footer from 'components/Footer';
+import { SponsorWrapper } from 'components/SponsorWrapper';
 
 ReactGA.initialize('G-9SBZ9ZN8GG');
 
@@ -31,9 +32,10 @@ const App: React.FC<AppProps> = ({ Component, pageProps }) => {
       </Head>
 
       <PlausibleProvider domain="ethburned.info">
-        <Header />
+        <Header siteName="ethburned.info" />
 
         <Component {...pageProps} />
+        <SponsorWrapper />
 
         <Footer />
       </PlausibleProvider>
